@@ -1,8 +1,23 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import ContactContext from '../../context/contact/ContactContext';
 
 const ContactForm = () => {
   const contactContext = useContext(ContactContext);
+  const { addContact, current, clearCurrent, updateContact } = contactContext;
+
+  useEffect(() => {
+    if (current !== null) {
+      setContact(current);
+    } else {
+      setContact({
+        name: '',
+        email: '',
+        phone: '',
+        type: 'personal',
+      });
+    }
+  }, [contactContext, current]);
+
   const [contact, setContact] = useState({
     name: '',
     email: '',
@@ -16,19 +31,25 @@ const ContactForm = () => {
     setContact({ ...contact, [e.target.name]: e.target.value });
 
   const handleSubmit = e => {
-    console.log('object');
     e.preventDefault();
-    contactContext.addContact(contact);
-    setContact({
-      name: '',
-      email: '',
-      phone: '',
-      type: 'personal',
-    });
+    if (current === null) {
+      addContact(contact);
+    } else {
+      updateContact(contact);
+    }
+    handleAllClear();
   };
+
+  const handleAllClear = () => {
+    clearCurrent();
+  };
+
   return (
     <form onSubmit={handleSubmit}>
-      <h2 className='text-primary'>Add Contact</h2>
+      <h2 className='text-primary'>
+        {' '}
+        {current ? 'Edit Contact' : 'Add Contact'}{' '}
+      </h2>
       <input
         type='text'
         placeholder='Name'
@@ -70,9 +91,19 @@ const ContactForm = () => {
       <div>
         <input
           type='submit'
-          value='Add Contact'
+          value={current ? 'Update Contact' : 'Add Contact'}
           className='btn btn-primary btn-block'
         />
+        {current && (
+          <div>
+            <button
+              className='btn btn-light btn-block'
+              onClick={handleAllClear}
+            >
+              Clear
+            </button>
+          </div>
+        )}
       </div>
     </form>
   );
